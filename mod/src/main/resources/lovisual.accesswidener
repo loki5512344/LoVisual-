@@ -1,0 +1,11 @@
+accessWidener v2 named
+
+accessible class net/minecraft/client/MinecraftClient
+accessible class net/minecraft/client/network/ClientPlayerEntity
+accessible class net/minecraft/client/network/ClientPlayNetworkHandler
+accessible class net/minecraft/client/gui/hud/InGameHud
+accessible class net/minecraft/client/render/GameRenderer
+accessible class net/minecraft/client/render/WorldRenderer
+accessible class net/minecraft/network/ClientConnection
+accessible class net/minecraft/network/packet/s2c/play/WorldTimeUpdateS2CPacket
+accessible class net/minecraft/network/packet/c2s/play/PlayerMoveC2SPacket

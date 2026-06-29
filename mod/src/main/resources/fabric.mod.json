@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "id": "lovisual",
+  "version": "${version}",
+  "name": "LoVisual",
+  "description": "Minecraft utility client",
+  "authors": ["loki"],
+  "contact": {},
+  "license": "All-Rights-Reserved",
+  "icon": "assets/lovisual/textures/branding/icon.png",
+  "environment": "client",
+  "entrypoints": {
+    "main": ["dev.loki.lovisual.LoVisual"],
+    "client": ["dev.loki.lovisual.LoVisualClient"]
+  },
+  "mixins": ["lovisual.mixins.json"],
+  "accessWidener": "lovisual.accesswidener",
+  "depends": {
+    "fabricloader": "${loaderVersion}",
+    "minecraft": ">=1.21.4",
+    "java": ">=21",
+    "fabric-api": "*"
+  }
+}
