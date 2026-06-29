@@ -30,7 +30,7 @@ public class TargetHUD extends HudElement {
         int boxWidth = Math.max(nameWidth, healthWidth) + 10;
         int boxHeight = fh * 2 + 8;
 
-        ctx.fill((int) x, (int) y, (int) x + boxWidth, (int) y + boxHeight, 0x80000000);
+        ctx.fill((int) x, (int) y, (int) x + boxWidth, (int) y + boxHeight, getThemeBg());
         ctx.fill((int) x, (int) y, (int) x + 2, (int) y + boxHeight, accentColor);
 
         ctx.drawText(mc.textRenderer, name, (int) x + 6, (int) y + 3, 0xFFFFFFFF, true);

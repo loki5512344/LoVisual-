@@ -1,3 +1,5 @@
+use std::fs;
+use std::path::PathBuf;
 use eframe::egui;
 use egui::{Color32, CornerRadius};
 use crate::api::Client;
@@ -20,6 +22,13 @@ pub enum LoginMode {
 }
 
 impl LoginScreen {
+    fn save_session(username: &str) {
+        let base = dirs::config_dir().unwrap_or_else(|| PathBuf::from("."));
+        let dir = base.join("lovisual");
+        fs::create_dir_all(&dir).ok();
+        fs::write(dir.join("account.txt"), username).ok();
+    }
+
     pub fn show(&mut self, ctx: &egui::Context, api: &mut Client) -> Option<String> {
         let mut token: Option<String> = None;
 
@@ -68,18 +77,26 @@ impl LoginScreen {
                         ).fill(ACCENT).corner_radius(CornerRadius::same(6))).clicked() {
                             self.error.clear();
                             let result = match self.mode {
-                                LoginMode::Login => api.login(&self.email, &self.password),
+                                LoginMode::Login => {
+                                    api.login(&self.email, &self.password)
+                                        .map(|(t, u)| (t, u))
+                                }
                                 LoginMode::Register => {
-                                    api.register(&self.email, &self.username, &self.password)
+                                    match api.register(&self.email, &self.username, &self.password) {
+                                        Ok(username) => {
+                                            match api.login(&self.email, &self.password) {
+                                                Ok((t, _)) => Ok((t, username)),
+                                                Err(e) => Err(e),
+                                            }
+                                        }
+                                        Err(e) => Err(e),
+                                    }
                                 }
                             };
                             match result {
-                                Ok(t) => {
-                                    if self.mode == LoginMode::Register {
-                                        token = Some(api.login(&self.email, &self.password).unwrap_or(t));
-                                    } else {
-                                        token = Some(t);
-                                    }
+                                Ok((t, u)) => {
+                                    Self::save_session(&u);
+                                    token = Some(t);
                                 }
                                 Err(e) => self.error = e,
                             }

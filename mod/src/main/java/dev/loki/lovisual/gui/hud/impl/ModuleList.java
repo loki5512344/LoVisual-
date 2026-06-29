@@ -45,7 +45,7 @@ public class ModuleList extends HudElement {
             int textWidth = mc.textRenderer.getWidth(name);
             if (textWidth > maxWidth) maxWidth = textWidth;
 
-            ctx.fill((int) x, yOff, (int) x + textWidth + 4, yOff + fh + 2, 0x60000000);
+            ctx.fill((int) x, yOff, (int) x + textWidth + 4, yOff + fh + 2, getThemeBg());
             ctx.fill((int) x, yOff, (int) x + 2, yOff + fh + 2, accentColor);
 
             int color = 0xFFFFFFFF;

@@ -25,7 +25,7 @@ public class Coords extends HudElement {
         String[] lines = {coords, direction, biome};
 
         for (String line : lines) {
-            ctx.fill((int) x, yOff, (int) x + mc.textRenderer.getWidth(line) + 6, yOff + fh + 2, 0x60000000);
+            ctx.fill((int) x, yOff, (int) x + mc.textRenderer.getWidth(line) + 6, yOff + fh + 2, getThemeBg());
             ctx.drawText(mc.textRenderer, line, (int) x + 3, yOff + 1, accentColor, true);
             yOff += fh + 3;
         }

@@ -3,6 +3,7 @@ mod login;
 mod dashboard;
 mod api;
 mod theme;
+mod launch;
 
 fn main() -> eframe::Result {
     let options = eframe::NativeOptions {

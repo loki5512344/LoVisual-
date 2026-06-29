@@ -1,5 +1,6 @@
 package dev.loki.lovisual.command;
 
+import dev.loki.lovisual.cloud.CloudAPI;
 import dev.loki.lovisual.core.event.EventBus;
 import dev.loki.lovisual.core.event.impl.PacketEvent;
 import dev.loki.lovisual.module.Module;
@@ -71,7 +72,7 @@ public class CommandManager {
             @Override
             public void execute(String[] args) {
                 if (args.length < 1) {
-                    sendMessage("Usage: /Lovisual config <save/load/profile/list>");
+                    sendMessage("Usage: /Lovisual config <save/load/profile/list/cloud>");
                     return;
                 }
                 switch (args[0].toLowerCase()) {
@@ -96,9 +97,44 @@ public class CommandManager {
                         List<String> profiles = ModuleManager.INSTANCE.configManager.getProfiles();
                         sendMessage("§6Profiles: " + String.join(", ", profiles));
                     }
+                    case "cloud" -> {
+                        if (args.length < 2) {
+                            sendMessage("§e/Lovisual config cloud upload <name> §7- Upload, get share key");
+                            sendMessage("§e/Lovisual config cloud download <key> §7- Download by key");
+                            return;
+                        }
+                        if (mc.player == null) return;
+                        String uid = mc.player.getUuidAsString();
+                        CloudAPI api = new CloudAPI(uid);
+
+                        if ("upload".equals(args[1])) {
+                            if (args.length < 3) { sendMessage("§cName it: /Lovisual config cloud upload <name>"); return; }
+                            new Thread(() -> {
+                                try {
+                                    String data = ModuleManager.INSTANCE.configManager.getProfileData();
+                                    String key = api.upload(args[2], data);
+                                    sendMessage("§aShared! Key: §e" + key + " §7- give this to anyone");
+                                } catch (Exception e) {
+                                    sendMessage("§cUpload failed: " + e.getMessage());
+                                }
+                            }).start();
+                        } else if ("download".equals(args[1])) {
+                            if (args.length < 3) { sendMessage("§cUsage: /Lovisual config cloud download <key>"); return; }
+                            new Thread(() -> {
+                                try {
+                                    String data = api.download(args[2]);
+                                    ModuleManager.INSTANCE.configManager.loadFromString(data);
+                                    sendMessage("§aConfig downloaded and applied!");
+                                } catch (Exception e) {
+                                    sendMessage("§cDownload failed: " + e.getMessage());
+                                }
+                            }).start();
+                        }
+                    }
                 }
             }
         });
+
     }
 
     public void register(Command command) {

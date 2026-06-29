@@ -16,7 +16,7 @@ public class Watermark extends HudElement {
         int fh = mc.textRenderer.fontHeight;
         int tw = mc.textRenderer.getWidth(text);
 
-        ctx.fill((int) x, (int) y, (int) x + tw + 6, (int) y + fh + 4, 0x80000000);
+        ctx.fill((int) x, (int) y, (int) x + tw + 6, (int) y + fh + 4, getThemeBg());
         ctx.drawText(mc.textRenderer, text, (int) x + 3, (int) y + 2, color, true);
 
         setWidth(tw + 6);

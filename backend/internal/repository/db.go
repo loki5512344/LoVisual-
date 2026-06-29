@@ -45,8 +45,18 @@ func (s *SQLite) Migrate() error {
 		`CREATE TABLE IF NOT EXISTS configs (
 			id TEXT PRIMARY KEY, user_id TEXT NOT NULL,
 			name TEXT NOT NULL, data TEXT NOT NULL,
-			version INTEGER DEFAULT 1, updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+			version INTEGER DEFAULT 1, share_key TEXT UNIQUE,
+			updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 			FOREIGN KEY(user_id) REFERENCES users(id)
+		)`,
+		`CREATE INDEX IF NOT EXISTS idx_configs_share_key ON configs(share_key)`,
+		`CREATE TABLE IF NOT EXISTS friends (
+			id TEXT PRIMARY KEY, user_id TEXT NOT NULL,
+			friend_id TEXT NOT NULL,
+			created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+			FOREIGN KEY(user_id) REFERENCES users(id),
+			FOREIGN KEY(friend_id) REFERENCES users(id),
+			UNIQUE(user_id, friend_id)
 		)`,
 	}
 	for _, m := range migrations {

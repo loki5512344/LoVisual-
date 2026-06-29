@@ -31,7 +31,7 @@ func main() {
 	mux := http.NewServeMux()
 	handler.RegisterAuth(mux, auth)
 	handler.RegisterProfile(mux, srv, auth)
-	handler.RegisterConfig(mux, db, auth)
+	handler.RegisterConfig(mux, db, nil)
 	handler.RegisterAdmin(mux, db)
 
 	mux.HandleFunc("GET /ws", hub.ServeWS)

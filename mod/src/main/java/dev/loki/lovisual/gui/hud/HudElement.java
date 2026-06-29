@@ -2,6 +2,7 @@ package dev.loki.lovisual.gui.hud;
 
 import dev.loki.lovisual.setting.Setting;
 import dev.loki.lovisual.setting.impl.ModeSetting;
+import dev.loki.lovisual.theme.ThemeManager;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 
@@ -78,5 +79,17 @@ public abstract class HudElement {
 
     protected int packColor(int r, int g, int b) {
         return (255 << 24) | ((r & 255) << 16) | ((g & 255) << 8) | (b & 255);
+    }
+
+    protected int getThemeBg() {
+        return ThemeManager.getHudBgRGB();
+    }
+
+    protected int getThemeAccent() {
+        return ThemeManager.getAccentRGB();
+    }
+
+    protected int getThemeText() {
+        return ThemeManager.getTextPrimaryRGB();
     }
 }

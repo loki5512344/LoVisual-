@@ -6,37 +6,56 @@ import (
 
 	"lovisual-backend/internal/model"
 	"lovisual-backend/internal/repository"
-	"lovisual-backend/internal/service"
 )
 
-func RegisterConfig(mux *http.ServeMux, db *repository.SQLite, a *service.Auth) {
-	mux.HandleFunc("GET /configs", func(w http.ResponseWriter, r *http.Request) {
-		user := mustAuth(a, r)
-		configs, _ := db.GetConfigs(user.ID)
-		json.NewEncoder(w).Encode(configs)
-	})
-
+func RegisterConfig(mux *http.ServeMux, db *repository.SQLite, _ interface{}) {
 	mux.HandleFunc("POST /configs", func(w http.ResponseWriter, r *http.Request) {
-		user := mustAuth(a, r)
 		var b struct {
-			Name string `json:"name"`
-			Data string `json:"data"`
+			UserID string `json:"user_id"`
+			Name   string `json:"name"`
+			Data   string `json:"data"`
 		}
-		json.NewDecoder(r.Body).Decode(&b)
+		if err := json.NewDecoder(r.Body).Decode(&b); err != nil {
+			http.Error(w, `{"error":"bad request"}`, 400)
+			return
+		}
+		if b.UserID == "" || b.Name == "" {
+			http.Error(w, `{"error":"user_id and name required"}`, 400)
+			return
+		}
 		c := &model.CloudConfig{
-			ID:     user.ID + "-" + b.Name,
-			UserID: user.ID,
+			ID:     b.UserID + "-" + b.Name,
+			UserID: b.UserID,
 			Name:   b.Name,
 			Data:   b.Data,
 		}
-		db.SaveConfig(c)
-		w.Write([]byte(`{"status":"saved"}`))
+		if err := db.SaveConfig(c); err != nil {
+			http.Error(w, `{"error":"`+err.Error()+`"}`, 409)
+			return
+		}
+		json.NewEncoder(w).Encode(map[string]string{
+			"status":    "saved",
+			"share_key": c.ShareKey,
+		})
 	})
 
-	mux.HandleFunc("DELETE /configs/{name}", func(w http.ResponseWriter, r *http.Request) {
-		user := mustAuth(a, r)
-		id := user.ID + "-" + r.PathValue("name")
-		db.DeleteConfig(id)
+	mux.HandleFunc("GET /configs/share/{key}", func(w http.ResponseWriter, r *http.Request) {
+		key := r.PathValue("key")
+		c, err := db.GetConfigByShareKey(key)
+		if err != nil {
+			http.Error(w, `{"error":"not found"}`, 404)
+			return
+		}
+		json.NewEncoder(w).Encode(c)
+	})
+
+	mux.HandleFunc("GET /configs/user/{id}", func(w http.ResponseWriter, r *http.Request) {
+		configs, _ := db.GetConfigs(r.PathValue("id"))
+		json.NewEncoder(w).Encode(configs)
+	})
+
+	mux.HandleFunc("DELETE /configs/{user}/{name}", func(w http.ResponseWriter, r *http.Request) {
+		db.DeleteConfig(r.PathValue("user") + "-" + r.PathValue("name"))
 		w.Write([]byte(`{"status":"deleted"}`))
 	})
 }

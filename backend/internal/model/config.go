@@ -6,8 +6,9 @@ type CloudConfig struct {
 	ID        string    `json:"id"`
 	UserID    string    `json:"user_id"`
 	Name      string    `json:"name"`
-	Data      string    `json:"data"` // raw .loconf content
+	Data      string    `json:"data"`
 	Version   int       `json:"version"`
+	ShareKey  string    `json:"share_key"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
 

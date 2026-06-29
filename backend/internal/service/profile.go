@@ -34,3 +34,23 @@ func (s *Profile) AddPlaytime(userID string, seconds int64) error {
 	}
 	return s.db.UpdateProfile(p)
 }
+
+func (s *Profile) GetByUsername(username string) (*model.User, error) {
+	return s.db.GetUserByUsername(username)
+}
+
+func (s *Profile) SearchUsers(query string) ([]model.User, error) {
+	return s.db.SearchUsers(query)
+}
+
+func (s *Profile) AddFriend(userID, friendID string) error {
+	return s.db.AddFriend(userID, friendID)
+}
+
+func (s *Profile) RemoveFriend(userID, friendID string) error {
+	return s.db.RemoveFriend(userID, friendID)
+}
+
+func (s *Profile) GetFriends(userID string) ([]string, error) {
+	return s.db.GetFriends(userID)
+}

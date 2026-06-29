@@ -26,10 +26,6 @@ pub struct Profile {
     pub nickname: String,
     pub avatar_url: String,
     pub playtime: i64,
-    pub kills: i32,
-    pub deaths: i32,
-    pub level: i32,
-    pub xp: i32,
 }
 
 pub struct Client {
@@ -45,7 +41,7 @@ impl Client {
         }
     }
 
-    pub fn login(&mut self, email: &str, password: &str) -> Result<String, String> {
+    pub fn login(&mut self, email: &str, password: &str) -> Result<(String, String), String> {
         let body = LoginRequest {
             email: email.into(),
             password: password.into(),
@@ -58,13 +54,14 @@ impl Client {
             .json()
             .map_err(|e| e.to_string())?;
 
-        match (resp.token, resp.error) {
-            (Some(t), _) => {
+        match (resp.token, resp.error, resp.username) {
+            (Some(t), _, Some(u)) => {
                 self.token = Some(t.clone());
-                Ok(t)
+                Ok((t, u))
             }
-            (_, Some(e)) => Err(e),
-            (None, None) => Err("unknown error".into()),
+            (_, Some(e), _) => Err(e),
+            (None, None, _) => Err("unknown error".into()),
+            _ => Err("missing username".into()),
         }
     }
 
@@ -82,10 +79,11 @@ impl Client {
             .json()
             .map_err(|e| e.to_string())?;
 
-        if let Some(e) = resp.error {
-            return Err(e);
+        match (resp.error, resp.username) {
+            (Some(e), _) => Err(e),
+            (_, Some(u)) => Ok(u),
+            (None, None) => Err("unknown error".into()),
         }
-        Ok("registered".into())
     }
 
     pub fn get_profile(&self) -> Result<Profile, String> {
