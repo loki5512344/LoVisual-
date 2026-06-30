@@ -1,5 +1,6 @@
 package dev.loki.lovisual;
 
+import dev.loki.lovisual.config.BackendConfig;
 import dev.loki.lovisual.core.Updater;
 import dev.loki.lovisual.core.manager.Managers;
 import dev.loki.lovisual.gui.hud.HudManager;
@@ -32,6 +33,7 @@ public class LoVisualClient implements ClientModInitializer {
 
         mm.init();
         Managers.CONFIG.init();
+        BackendConfig.load();
         Managers.COMMAND.init();
         HudManager.init();
         FontRegistry.init();

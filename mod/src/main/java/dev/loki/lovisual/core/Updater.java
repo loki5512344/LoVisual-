@@ -3,6 +3,7 @@ package dev.loki.lovisual.core;
 import com.google.gson.JsonObject;
 import com.google.gson.Gson;
 import dev.loki.lovisual.LoVisual;
+import dev.loki.lovisual.config.BackendConfig;
 
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -10,15 +11,15 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 
 public class Updater {
-    private static final String VERSION_URL = "http://localhost:8080/version";
     private static final Gson GSON = new Gson();
 
     public static void check() {
+        String url = BackendConfig.getApiBase() + "/version";
         new Thread(() -> {
             try {
                 HttpClient client = HttpClient.newHttpClient();
                 HttpRequest req = HttpRequest.newBuilder()
-                    .uri(URI.create(VERSION_URL))
+                    .uri(URI.create(url))
                     .GET()
                     .build();
                 HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString());

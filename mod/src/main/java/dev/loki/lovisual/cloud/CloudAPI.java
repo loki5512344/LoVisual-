@@ -2,6 +2,7 @@ package dev.loki.lovisual.cloud;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import dev.loki.lovisual.config.BackendConfig;
 
 import java.io.*;
 import java.net.HttpURLConnection;
@@ -9,7 +10,6 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 
 public class CloudAPI {
-    private static final String BASE = "http://localhost:8080";
     private static final Gson GSON = new Gson();
     private final String userId;
 
@@ -37,14 +37,14 @@ public class CloudAPI {
     }
 
     private String get(String path) throws Exception {
-        HttpURLConnection conn = (HttpURLConnection) URI.create(BASE + path).toURL().openConnection();
+        HttpURLConnection conn = (HttpURLConnection) URI.create(BackendConfig.getApiBase() + path).toURL().openConnection();
         conn.setConnectTimeout(5000);
         conn.setReadTimeout(5000);
         return read(conn);
     }
 
     private String post(String path, String data) throws Exception {
-        HttpURLConnection conn = (HttpURLConnection) URI.create(BASE + path).toURL().openConnection();
+        HttpURLConnection conn = (HttpURLConnection) URI.create(BackendConfig.getApiBase() + path).toURL().openConnection();
         conn.setRequestMethod("POST");
         conn.setRequestProperty("Content-Type", "application/json");
         conn.setDoOutput(true);

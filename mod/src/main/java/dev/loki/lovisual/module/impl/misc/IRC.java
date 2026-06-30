@@ -2,6 +2,7 @@ package dev.loki.lovisual.module.impl.misc;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import dev.loki.lovisual.config.BackendConfig;
 import dev.loki.lovisual.gui.hud.impl.Notifications;
 import dev.loki.lovisual.module.Module;
 import dev.loki.lovisual.module.ModuleCategory;
@@ -21,7 +22,6 @@ public class IRC extends Module {
     private WebSocket ws;
     private HttpClient httpClient;
     private final Gson gson = new Gson();
-    private String uri = "ws://localhost:8080/ws";
 
     @Override
     public void onEnable() {
@@ -41,6 +41,7 @@ public class IRC extends Module {
 
     public void connect() {
         if (isConnected()) return;
+        String uri = BackendConfig.getWsUrl();
         httpClient = HttpClient.newHttpClient();
         httpClient.newWebSocketBuilder()
                 .buildAsync(URI.create(uri), new Listener())
