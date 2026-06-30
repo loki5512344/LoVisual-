@@ -59,9 +59,10 @@ public class LoVisualClient implements ClientModInitializer {
         mm.register(new NoWeather());
         mm.register(new NoBobbing());
         mm.register(new Crosshair());
-        mm.register(new PVision());
-        mm.register(new Nametags());
-        mm.register(new HealthTags());
+        // TODO: implement Nametags, HealthTags, PVision — currently empty stubs
+        // mm.register(new PVision());
+        // mm.register(new Nametags());
+        // mm.register(new HealthTags());
         mm.register(new AutoTool());
         mm.register(new InvManager());
         mm.register(new ExpThrower());

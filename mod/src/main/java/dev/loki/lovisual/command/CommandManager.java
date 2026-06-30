@@ -54,7 +54,13 @@ public class CommandManager {
                     sendMessage("Module not found");
                     return;
                 }
-                sendMessage("Bound " + module.getName() + " to " + args[1]);
+                try {
+                    int keyCode = Integer.parseInt(args[1]);
+                    module.setKey(keyCode);
+                    sendMessage("Bound " + module.getName() + " to key " + keyCode);
+                } catch (NumberFormatException e) {
+                    sendMessage("Invalid key code: " + args[1] + ". Use numeric GLFW key code.");
+                }
             }
         });
 
