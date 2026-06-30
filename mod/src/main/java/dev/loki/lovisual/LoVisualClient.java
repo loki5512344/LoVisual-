@@ -11,6 +11,7 @@ import dev.loki.lovisual.module.impl.movement.Sprint;
 import dev.loki.lovisual.module.impl.player.*;
 import dev.loki.lovisual.module.impl.render.*;
 import dev.loki.lovisual.gui.clickgui.ClickGuiScreen;
+import dev.loki.lovisual.gui.mainmenu.MainMenuHandler;
 import dev.loki.lovisual.render.FontRegistry;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
@@ -35,6 +36,7 @@ public class LoVisualClient implements ClientModInitializer {
         HudManager.init();
         FontRegistry.init();
         Managers.CONFIG.load();
+        MainMenuHandler.init();
         Updater.check();
 
         ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) ->

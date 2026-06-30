@@ -4,13 +4,17 @@ import java.util.function.Supplier;
 
 public abstract class Setting<T> {
     private final String name;
+    private final T defaultValue;
     private T value;
     private Supplier<Boolean> visible = () -> true;
 
     public Setting(String name, T defaultValue) {
         this.name = name;
+        this.defaultValue = defaultValue;
         this.value = defaultValue;
     }
+
+    public T getDefault() { return defaultValue; }
 
     public String getName() { return name; }
     public T get() { return value; }

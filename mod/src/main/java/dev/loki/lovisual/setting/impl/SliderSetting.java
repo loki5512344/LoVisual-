@@ -33,6 +33,10 @@ public class SliderSetting extends Setting<Double> {
 
     @Override
     public void deserialize(String value) {
-        set(Double.parseDouble(value));
+        try {
+            set(Double.parseDouble(value));
+        } catch (NumberFormatException e) {
+            set(getDefault());
+        }
     }
 }

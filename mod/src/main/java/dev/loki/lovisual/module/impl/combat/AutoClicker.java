@@ -29,7 +29,9 @@ public class AutoClicker extends Module {
 
         if (leftClick.get() && mc.options.attackKey.isPressed()) {
             if (now - lastLeftClick >= interval) {
-                mc.interactionManager.attackEntity(mc.player, mc.targetedEntity);
+                if (mc.targetedEntity != null) {
+                    mc.interactionManager.attackEntity(mc.player, mc.targetedEntity);
+                }
                 mc.player.swingHand(Hand.MAIN_HAND);
                 lastLeftClick = now;
             }

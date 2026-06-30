@@ -49,8 +49,8 @@ public class LoVisualMainMenu extends Screen {
     private final Animation panelSlide = new Animation(Easing.EASE_OUT_CUBIC, 300);
 
     // Mouse parallax
-    private float mouseSmoothX = width / 2f;
-    private float mouseSmoothY = height / 2f;
+    private float mouseSmoothX;
+    private float mouseSmoothY;
 
     // Cached animated panel Y for click detection
     private int animatedPanelY;
@@ -91,6 +91,9 @@ public class LoVisualMainMenu extends Screen {
                 RANDOM.nextFloat() * (float) Math.PI * 2
             ));
         }
+
+        mouseSmoothX = width / 2f;
+        mouseSmoothY = height / 2f;
 
         fadeIn.reset();
         panelSlide.reset();

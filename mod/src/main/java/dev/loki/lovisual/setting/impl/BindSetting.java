@@ -18,6 +18,10 @@ public class BindSetting extends Setting<Integer> {
 
     @Override
     public void deserialize(String value) {
-        set(Integer.parseInt(value));
+        try {
+            set(Integer.parseInt(value));
+        } catch (NumberFormatException e) {
+            set(getDefault());
+        }
     }
 }
