@@ -33,6 +33,7 @@ func main() {
 	handler.RegisterProfile(mux, srv, auth)
 	handler.RegisterConfig(mux, db, nil)
 	handler.RegisterAdmin(mux, db)
+	handler.RegisterVersion(mux)
 
 	mux.HandleFunc("GET /ws", hub.ServeWS)
 

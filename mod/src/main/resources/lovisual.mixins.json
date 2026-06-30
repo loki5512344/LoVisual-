@@ -7,6 +7,7 @@
     "client.ClientConnectionMixin",
     "client.KeyboardMixin",
     "client.MinecraftClientMixin",
+    "render.HeldItemRendererMixin",
     "render.InGameHudMixin",
     "render.GameRendererMixin",
     "render.WorldRendererMixin",

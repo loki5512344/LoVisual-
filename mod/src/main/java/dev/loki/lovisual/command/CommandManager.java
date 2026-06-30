@@ -5,6 +5,7 @@ import dev.loki.lovisual.core.event.EventBus;
 import dev.loki.lovisual.core.event.impl.PacketEvent;
 import dev.loki.lovisual.module.Module;
 import dev.loki.lovisual.module.ModuleManager;
+import dev.loki.lovisual.module.impl.misc.IRC;
 import dev.loki.lovisual.core.event.EventHandler;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.network.packet.c2s.play.ChatMessageC2SPacket;
@@ -64,7 +65,28 @@ public class CommandManager {
                 sendMessage("§e/Lovisual toggle <module> §7- Toggle module");
                 sendMessage("§e/Lovisual bind <module> <key> §7- Bind key");
                 sendMessage("§e/Lovisual help §7- This screen");
+                sendMessage("§e/Lovisual irc <message> §7- Send IRC message");
                 sendMessage("§e/Lovisual config <save/load/profile> §7- Config management");
+            }
+        });
+
+        register(new Command("irc", "Send an IRC message", "irc") {
+            @Override
+            public void execute(String[] args) {
+                if (args.length < 1) {
+                    sendMessage("Usage: /Lovisual irc <message>");
+                    return;
+                }
+                IRC irc = ModuleManager.INSTANCE.get(IRC.class);
+                if (irc == null) {
+                    sendMessage("IRC module not found");
+                    return;
+                }
+                if (!irc.isEnabled()) {
+                    sendMessage("§cEnable the IRC module first (/Lovisual toggle IRC)");
+                    return;
+                }
+                irc.sendMessage(String.join(" ", args));
             }
         });
 

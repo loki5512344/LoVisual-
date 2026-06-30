@@ -1,11 +1,14 @@
 package irc
 
 import (
+	"encoding/json"
 	"log"
 	"net/http"
 	"sync"
 
 	"golang.org/x/net/websocket"
+
+	"lovisual-backend/internal/model"
 )
 
 type Client struct {
@@ -46,15 +49,47 @@ func (h *Hub) ServeWS(w http.ResponseWriter, r *http.Request) {
 
 func (h *Hub) readLoop(c *Client) {
 	for {
-		var msg []byte
-		if err := websocket.Message.Receive(c.conn, &msg); err != nil {
+		var raw []byte
+		if err := websocket.Message.Receive(c.conn, &raw); err != nil {
 			break
 		}
+
+		var wsMsg model.WSMessage
+		if err := json.Unmarshal(raw, &wsMsg); err != nil {
+			log.Printf("irc: invalid message from %s: %v", c.ID, err)
+			continue
+		}
+
+		if wsMsg.Type != "irc_message" {
+			continue
+		}
+
+		var ircMsg model.IRCMessage
+		if err := json.Unmarshal(wsMsg.Payload, &ircMsg); err != nil {
+			log.Printf("irc: invalid IRC payload from %s: %v", c.ID, err)
+			continue
+		}
+
+		ircMsg.From = c.ID
+
+		payload, err := json.Marshal(ircMsg)
+		if err != nil {
+			log.Printf("irc: marshal error: %v", err)
+			continue
+		}
+		wsMsg.Payload = payload
+
+		out, err := json.Marshal(wsMsg)
+		if err != nil {
+			log.Printf("irc: marshal error: %v", err)
+			continue
+		}
+
 		h.mu.RLock()
 		for _, client := range h.clients {
 			if client.ID != c.ID {
 				select {
-				case client.send <- msg:
+				case client.send <- out:
 				default:
 				}
 			}

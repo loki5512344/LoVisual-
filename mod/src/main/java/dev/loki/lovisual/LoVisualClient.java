@@ -1,9 +1,11 @@
 package dev.loki.lovisual;
 
+import dev.loki.lovisual.core.Updater;
 import dev.loki.lovisual.core.manager.Managers;
 import dev.loki.lovisual.gui.hud.HudManager;
 import dev.loki.lovisual.gui.hud.impl.*;
 import dev.loki.lovisual.module.ModuleManager;
+import dev.loki.lovisual.module.impl.combat.*;
 import dev.loki.lovisual.module.impl.misc.*;
 import dev.loki.lovisual.module.impl.movement.Sprint;
 import dev.loki.lovisual.module.impl.player.*;
@@ -26,10 +28,13 @@ public class LoVisualClient implements ClientModInitializer {
         Managers.COMMAND.init();
         HudManager.init();
         Managers.CONFIG.load();
+        Updater.check();
     }
 
     private void registerModules(ModuleManager mm) {
         mm.register(new Sprint());
+        mm.register(new AutoClicker());
+        mm.register(new Trajectories());
         mm.register(new ClickGUI());
         mm.register(new FullBright());
         mm.register(new NoHurtCam());
@@ -40,6 +45,7 @@ public class LoVisualClient implements ClientModInitializer {
         mm.register(new Nametags());
         mm.register(new HealthTags());
         mm.register(new AutoTool());
+        mm.register(new InvManager());
         mm.register(new ExpThrower());
         mm.register(new MiddleClickFriend());
         mm.register(new Refill());
@@ -47,6 +53,7 @@ public class LoVisualClient implements ClientModInitializer {
         mm.register(new AntiAFK());
         mm.register(new AutoRespawn());
         mm.register(new NameProtect());
+        mm.register(new IRC());
     }
 
     private void registerHud() {

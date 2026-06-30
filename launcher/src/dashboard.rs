@@ -2,6 +2,8 @@ use eframe::egui;
 use egui::{CornerRadius, Color32};
 use crate::api::Profile;
 use crate::theme::ACCENT;
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::{Arc, Mutex};
 
 #[derive(Default)]
 pub struct Dashboard {
@@ -9,10 +11,38 @@ pub struct Dashboard {
     pub status: String,
     pub config_cmd: String,
     pub show_settings: bool,
+    pub update_checked: Arc<AtomicBool>,
+    pub update_available: Arc<Mutex<Option<String>>>,
 }
 
 impl Dashboard {
     pub fn show(&mut self, ctx: &egui::Context, launch: &mut bool, logout: &mut bool, _saved_cmd: &mut String) {
+        if !self.update_checked.load(Ordering::Relaxed) {
+            self.update_checked.store(true, Ordering::Relaxed);
+            let update_available = self.update_available.clone();
+            std::thread::spawn(move || {
+                match reqwest::blocking::get("http://localhost:8080/version") {
+                    Ok(resp) => {
+                        if let Ok(body) = resp.text() {
+                            if let Ok(val) = serde_json::from_str::<serde_json::Value>(&body) {
+                                let latest = val["version"].as_str().unwrap_or("");
+                                if latest != "1.0.0" {
+                                    if let Ok(mut avail) = update_available.lock() {
+                                        *avail = Some("Update available!".into());
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    Err(_) => {}
+                }
+            });
+        }
+        if let Ok(mut avail) = self.update_available.lock() {
+            if let Some(msg) = avail.take() {
+                self.status = msg;
+            }
+        }
 
         egui::CentralPanel::default().show(ctx, |ui| {
             ui.add_space(16.0);

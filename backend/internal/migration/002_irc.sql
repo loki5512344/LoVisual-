@@ -1,0 +1,6 @@
+CREATE TABLE IF NOT EXISTS irc_messages (
+    id TEXT PRIMARY KEY,
+    from_id TEXT NOT NULL,
+    content TEXT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);

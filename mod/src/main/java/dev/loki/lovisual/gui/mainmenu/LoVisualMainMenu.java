@@ -1,5 +1,6 @@
 package dev.loki.lovisual.gui.mainmenu;
 
+import dev.loki.lovisual.LoVisual;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen;
@@ -103,7 +104,7 @@ public class LoVisualMainMenu extends Screen {
         ctx.drawText(textRenderer, title, 0, 0, color, false);
         ctx.getMatrices().pop();
 
-        String version = "v1.0.0";
+        String version = "v" + LoVisual.VERSION;
         int verAlpha = (int) (fadeAlpha * 180);
         int verColor = (verAlpha << 24) | 0x888888;
         ctx.drawText(textRenderer, version, titleX + 2, titleY + (int) (12 * scale) + 6, verColor, false);

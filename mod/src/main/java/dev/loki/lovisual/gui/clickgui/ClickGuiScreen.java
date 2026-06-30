@@ -54,6 +54,48 @@ public class ClickGuiScreen extends Screen {
     }
 
     @Override
+    public void renderBackground(DrawContext ctx, int mouseX, int mouseY, float delta) {
+        int w = width;
+        int h = height;
+        java.awt.Color start = ThemeManager.getGradientStart();
+        java.awt.Color end = ThemeManager.getGradientEnd();
+        String dir = ThemeManager.getGradientDir();
+
+        switch (dir) {
+            case "Horizontal" -> {
+                for (int x = 0; x < w; x += 4) {
+                    float t = (float) x / w;
+                    int r = (int) (start.getRed() + (end.getRed() - start.getRed()) * t);
+                    int g = (int) (start.getGreen() + (end.getGreen() - start.getGreen()) * t);
+                    int b = (int) (start.getBlue() + (end.getBlue() - start.getBlue()) * t);
+                    ctx.fill(x, 0, x + 4, h, 0xFF000000 | (r << 16) | (g << 8) | b);
+                }
+            }
+            case "Diagonal" -> {
+                int step = Math.max(4, Math.min(w, h) / 32);
+                for (int y = 0; y < h; y += step) {
+                    for (int x = 0; x < w; x += step) {
+                        float t = (float) (x + y) / (w + h);
+                        int r = (int) (start.getRed() + (end.getRed() - start.getRed()) * t);
+                        int g = (int) (start.getGreen() + (end.getGreen() - start.getGreen()) * t);
+                        int b = (int) (start.getBlue() + (end.getBlue() - start.getBlue()) * t);
+                        ctx.fill(x, y, x + step, y + step, 0xFF000000 | (r << 16) | (g << 8) | b);
+                    }
+                }
+            }
+            default -> {
+                for (int y = 0; y < h; y += 4) {
+                    float t = (float) y / h;
+                    int r = (int) (start.getRed() + (end.getRed() - start.getRed()) * t);
+                    int g = (int) (start.getGreen() + (end.getGreen() - start.getGreen()) * t);
+                    int b = (int) (start.getBlue() + (end.getBlue() - start.getBlue()) * t);
+                    ctx.fill(0, y, w, y + 4, 0xFF000000 | (r << 16) | (g << 8) | b);
+                }
+            }
+        }
+    }
+
+    @Override
     public void render(DrawContext ctx, int mouseX, int mouseY, float delta) {
         renderBackground(ctx, mouseX, mouseY, delta);
 
