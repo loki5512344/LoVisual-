@@ -3,19 +3,27 @@ package dev.loki.lovisual.gui.clickgui;
 import dev.loki.lovisual.module.Module;
 import dev.loki.lovisual.module.ModuleCategory;
 import dev.loki.lovisual.module.ModuleManager;
+import dev.loki.lovisual.render.animation.Animation;
+import dev.loki.lovisual.render.animation.Easing;
+import dev.loki.lovisual.render.animation.SpringAnimator;
 import dev.loki.lovisual.setting.Setting;
 import dev.loki.lovisual.setting.impl.BooleanSetting;
 import dev.loki.lovisual.setting.impl.ModeSetting;
 import dev.loki.lovisual.setting.impl.SliderSetting;
 import dev.loki.lovisual.theme.ThemeManager;
+import net.minecraft.client.gui.Click;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.input.CharInput;
+import net.minecraft.client.input.KeyInput;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.MathHelper;
 
 import java.awt.Color;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class ClickGuiScreen extends Screen {
     private static final int CHIP_HEIGHT = 24;
@@ -39,8 +47,17 @@ public class ClickGuiScreen extends Screen {
 
     private boolean showThemePanel;
 
+    private final SpringAnimator settingsSlide = new SpringAnimator(0);
+    private final SpringAnimator openAnim = new SpringAnimator(0);
+    private final Map<String, SpringAnimator> cardHovers = new HashMap<>();
+
     public ClickGuiScreen() {
         super(Text.literal("ClickGUI"));
+        settingsSlide.setStiffness(200);
+        settingsSlide.setDamping(15);
+        openAnim.setStiffness(150);
+        openAnim.setDamping(10);
+        openAnim.setTarget(1);
     }
 
     private List<Module> getVisible() {
@@ -97,7 +114,19 @@ public class ClickGuiScreen extends Screen {
 
     @Override
     public void render(DrawContext ctx, int mouseX, int mouseY, float delta) {
-        renderBackground(ctx, mouseX, mouseY, delta);
+        settingsSlide.update(delta * 0.05f);
+        openAnim.update(delta * 0.05f);
+
+        float openScale = (float) Math.max(0.01, openAnim.getValue());
+        float openAlpha = (float) Math.min(1, openAnim.getValue());
+
+        int contentWidth = columns * (CARD_WIDTH + GAP) - GAP;
+        int startX = (width - contentWidth) / 2;
+
+        ctx.getMatrices().pushMatrix();
+        ctx.getMatrices().translate(width / 2f, height / 2f);
+        ctx.getMatrices().scale(openScale, openScale);
+        ctx.getMatrices().translate(-width / 2f, -height / 2f);
 
         if (dragging) {
             scrollY = dragStartScrollY + (mouseY - dragStartMouseY) * 0.5f;
@@ -108,13 +137,13 @@ public class ClickGuiScreen extends Screen {
             updateSliderFromMouse(slider, mouseX);
         }
 
+        renderBackground(ctx, mouseX, mouseY, delta);
+
         if (bindModule != null) {
             drawBindOverlay(ctx);
+            ctx.getMatrices().popMatrix();
             return;
         }
-
-        int contentWidth = columns * (CARD_WIDTH + GAP) - GAP;
-        int startX = (width - contentWidth) / 2;
 
         drawSearchBar(ctx, startX, contentWidth);
         drawChips(ctx, startX, mouseX, mouseY);
@@ -126,6 +155,8 @@ public class ClickGuiScreen extends Screen {
         } else {
             drawModules(ctx, startX, mouseX, mouseY);
         }
+
+        ctx.getMatrices().popMatrix();
     }
 
     private void drawSearchBar(DrawContext ctx, int startX, int contentWidth) {
@@ -260,23 +291,42 @@ public class ClickGuiScreen extends Screen {
             if (cy + CARD_HEIGHT > gridY && cy < height) {
                 boolean hover = mx >= cx && mx <= cx + CARD_WIDTH && my >= cy && my <= cy + CARD_HEIGHT;
 
+                String key = m.getName();
+                SpringAnimator hoverAnim = cardHovers.computeIfAbsent(key, k -> {
+                    SpringAnimator a = new SpringAnimator(hover ? 1 : 0);
+                    a.setStiffness(300);
+                    a.setDamping(18);
+                    return a;
+                });
+                hoverAnim.setTarget(hover ? 1 : 0);
+                hoverAnim.update(0.05f);
+                float scale = 1 + hoverAnim.getValue() * 0.05f;
+                float alpha = 0.7f + hoverAnim.getValue() * 0.3f;
+
+                ctx.getMatrices().pushMatrix();
+                ctx.getMatrices().translate(cx + CARD_WIDTH / 2f, cy + CARD_HEIGHT / 2f);
+                ctx.getMatrices().scale(scale, scale);
+                ctx.getMatrices().translate(-CARD_WIDTH / 2f, -CARD_HEIGHT / 2f);
+
                 int bg = m.isEnabled() ? (hover ? 0xCC440000 : 0xCC220000) : (hover ? panelBg() : bg());
+                int textColor = m.isEnabled() ? (int) (0xFFFFFFFF & 0xFFFFFF | ((int) (alpha * 255) << 24)) : 0xFF888888;
                 int border = m.isEnabled() ? accent() : (hover ? textSec() : 0x20000000);
 
-                ctx.fill(cx, cy, cx + CARD_WIDTH, cy + CARD_HEIGHT, bg);
-                ctx.fill(cx, cy, cx + CARD_WIDTH, cy + 1, border);
-                ctx.fill(cx, cy + CARD_HEIGHT - 1, cx + CARD_WIDTH, cy + CARD_HEIGHT, border);
-                ctx.fill(cx, cy, cx + 1, cy + CARD_HEIGHT, border);
-                ctx.fill(cx + CARD_WIDTH - 1, cy, cx + CARD_WIDTH, cy + CARD_HEIGHT, border);
+                ctx.fill(0, 0, CARD_WIDTH, CARD_HEIGHT, bg);
+                ctx.fill(0, 0, CARD_WIDTH, 1, border);
+                ctx.fill(0, CARD_HEIGHT - 1, CARD_WIDTH, CARD_HEIGHT, border);
+                ctx.fill(0, 0, 1, CARD_HEIGHT, border);
+                ctx.fill(CARD_WIDTH - 1, 0, CARD_WIDTH, CARD_HEIGHT, border);
 
-                ctx.drawText(textRenderer, m.getName(), cx + 8, cy + 8,
-                    m.isEnabled() ? 0xFFFFFFFF : 0xFF888888, false);
+                ctx.drawText(textRenderer, m.getName(), 8, 8, textColor, false);
 
                 String keyName = keyName(m.getKey());
                 if (keyName != null) {
-                    ctx.drawText(textRenderer, keyName, cx + CARD_WIDTH - 8 - textRenderer.getWidth(keyName),
-                        cy + 8, 0xFF555555, false);
+                    ctx.drawText(textRenderer, keyName, CARD_WIDTH - 8 - textRenderer.getWidth(keyName),
+                        8, 0xFF555555, false);
                 }
+
+                ctx.getMatrices().popMatrix();
             }
 
             col++;
@@ -307,9 +357,11 @@ public class ClickGuiScreen extends Screen {
             case 340 -> "LSHIFT";
             case 341 -> "LCTRL";
             case 342 -> "LALT";
-            case 344 -> "RCTRL";
-            case 345 -> "RALT";
-            case 346 -> "MENU";
+            case 343 -> "LSUPER";
+            case 344 -> "RSHIFT";
+            case 345 -> "RCTRL";
+            case 346 -> "RALT";
+            case 347 -> "RSUPER";
             case 32 -> "SPACE";
             default -> {
                 if (key >= 48 && key <= 57) yield String.valueOf((char) key);
@@ -329,27 +381,32 @@ public class ClickGuiScreen extends Screen {
         int ph = Math.min(height - 40, visible * 26 + 40);
         int px = (width - SETTINGS_WIDTH) / 2;
         int py = (height - ph) / 2;
-        int pex = px + SETTINGS_WIDTH;
         int pey = py + ph;
 
-        ctx.fill(px, py, pex, pey, 0xE0000000);
-        ctx.drawText(textRenderer, selectedModule.getName() + " Settings", px + 10, py + 8, accent(), false);
+        settingsSlide.setTarget(1);
+        float slideOffset = (float) (1 - settingsSlide.getValue()) * 60;
+
+        ctx.getMatrices().pushMatrix();
+        ctx.getMatrices().translate(px + slideOffset, 0);
+
+        ctx.fill(0, py, SETTINGS_WIDTH, pey, 0xE0000000);
+        ctx.drawText(textRenderer, selectedModule.getName() + " Settings", 10, py + 8, accent(), false);
 
         int sy = py + 30;
         for (Setting<?> s : settings) {
             if (!s.isVisible()) continue;
             int ey = sy + 24;
 
-            ctx.drawText(textRenderer, s.getName(), px + 10, sy + 2, textPrim(), false);
+            ctx.drawText(textRenderer, s.getName(), 10, sy + 2, textPrim(), false);
 
             if (s instanceof BooleanSetting bs) {
                 String val = bs.get() ? "ON" : "OFF";
                 int col = bs.get() ? 0xFF55FF55 : 0xFFFF5555;
-                ctx.drawText(textRenderer, val, pex - 10 - textRenderer.getWidth(val), sy + 2, col, false);
+                ctx.drawText(textRenderer, val, SETTINGS_WIDTH - 10 - textRenderer.getWidth(val), sy + 2, col, false);
             } else if (s instanceof ModeSetting ms) {
-                ctx.drawText(textRenderer, ms.get(), pex - 10 - textRenderer.getWidth(ms.get()), sy + 2, 0xFFFFFFAA, false);
+                ctx.drawText(textRenderer, ms.get(), SETTINGS_WIDTH - 10 - textRenderer.getWidth(ms.get()), sy + 2, 0xFFFFFFAA, false);
             } else if (s instanceof SliderSetting sl) {
-                int trackX = px + 10;
+                int trackX = 10;
                 int trackW = SETTINGS_WIDTH - 20;
                 int trackY = sy + 16;
                 int trackH = 4;
@@ -361,11 +418,13 @@ public class ClickGuiScreen extends Screen {
                 ctx.fill(trackX, trackY, trackX + fillW, trackY + trackH, accent());
 
                 String val = String.format("%.1f", sl.get());
-                ctx.drawText(textRenderer, val, pex - 10 - textRenderer.getWidth(val), sy + 2, 0xFF888888, false);
+                ctx.drawText(textRenderer, val, SETTINGS_WIDTH - 10 - textRenderer.getWidth(val), sy + 2, 0xFF888888, false);
             }
 
             sy = ey;
         }
+
+        ctx.getMatrices().popMatrix();
 
         if (selectedModule == null) draggingSlider = null;
     }
@@ -405,7 +464,10 @@ public class ClickGuiScreen extends Screen {
     private int textSec() { return ThemeManager.getTextSecondaryRGB(); }
 
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+    public boolean mouseClicked(Click click, boolean handled) {
+        double mouseX = click.x();
+        double mouseY = click.y();
+        int button = click.button();
         if (bindModule != null) {
             return true;
         }
@@ -432,6 +494,7 @@ public class ClickGuiScreen extends Screen {
                 return true;
             } else {
                 selectedModule = null;
+                settingsSlide.setTarget(0);
                 return true;
             }
         }
@@ -557,7 +620,13 @@ public class ClickGuiScreen extends Screen {
                     if (button == 0) {
                         m.toggle();
                     } else if (button == 1) {
-                        selectedModule = m;
+                        if (selectedModule != m) {
+                            selectedModule = m;
+                            settingsSlide.setTarget(0);
+                            settingsSlide.setStiffness(400);
+                            settingsSlide.setDamping(20);
+                            settingsSlide.setTarget(1);
+                        }
                     } else if (button == 2) {
                         bindModule = m;
                     }
@@ -599,9 +668,9 @@ public class ClickGuiScreen extends Screen {
     }
 
     @Override
-    public boolean mouseReleased(double mouseX, double mouseY, int button) {
+    public boolean mouseReleased(Click click) {
         dragging = false;
-        if (button == 0) {
+        if (click.button() == 0) {
             draggingSlider = null;
         }
         return true;
@@ -615,7 +684,8 @@ public class ClickGuiScreen extends Screen {
     }
 
     @Override
-    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+    public boolean keyPressed(KeyInput keyInput) {
+        int keyCode = keyInput.key();
         if (bindModule != null) {
             if (keyCode == 256) {
                 bindModule = null;
@@ -636,17 +706,18 @@ public class ClickGuiScreen extends Screen {
             return true;
         }
 
-        return super.keyPressed(keyCode, scanCode, modifiers);
+        return super.keyPressed(keyInput);
     }
 
     @Override
-    public boolean charTyped(char chr, int modifiers) {
+    public boolean charTyped(CharInput charInput) {
         if (bindModule != null) return true;
-        if (chr >= ' ' && chr <= '~') {
-            search += chr;
+        String s = charInput.asString();
+        if (!s.isEmpty()) {
+            search += s;
             return true;
         }
-        return super.charTyped(chr, modifiers);
+        return super.charTyped(charInput);
     }
 
     @Override

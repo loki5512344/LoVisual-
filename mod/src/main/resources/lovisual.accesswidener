@@ -9,3 +9,4 @@ accessible class net/minecraft/client/render/WorldRenderer
 accessible class net/minecraft/network/ClientConnection
 accessible class net/minecraft/network/packet/s2c/play/WorldTimeUpdateS2CPacket
 accessible class net/minecraft/network/packet/c2s/play/PlayerMoveC2SPacket
+accessible method net/minecraft/client/render/RenderLayer of (Ljava/lang/String;Lnet/minecraft/client/render/RenderSetup;)Lnet/minecraft/client/render/RenderLayer;

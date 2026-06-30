@@ -74,8 +74,8 @@ public class InvManager extends Module {
             }
         }
 
-        if (bestSlot != -1 && bestSlot != mc.player.getInventory().selectedSlot) {
-            mc.player.getInventory().selectedSlot = bestSlot;
+        if (bestSlot != -1 && bestSlot != mc.player.getInventory().getSelectedSlot()) {
+            mc.player.getInventory().setSelectedSlot(bestSlot);
         }
     }
 

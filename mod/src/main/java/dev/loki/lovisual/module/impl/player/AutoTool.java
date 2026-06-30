@@ -7,7 +7,7 @@ import dev.loki.lovisual.module.ModuleInfo;
 import dev.loki.lovisual.setting.impl.BooleanSetting;
 import dev.loki.lovisual.core.event.EventHandler;
 import net.minecraft.block.BlockState;
-import net.minecraft.item.SwordItem;
+
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
 
@@ -19,8 +19,6 @@ public class AutoTool extends Module {
     private void onTick(TickEvent event) {
         if (mc.player == null || mc.interactionManager == null) return;
         if (mc.player.isSpectator()) return;
-        if (sword.get() && mc.player.getMainHandStack().getItem() instanceof SwordItem) return;
-
         HitResult hit = mc.crosshairTarget;
         if (!(hit instanceof BlockHitResult blockHit)) return;
 
@@ -37,8 +35,8 @@ public class AutoTool extends Module {
             }
         }
 
-        if (bestSlot != -1 && bestSlot != mc.player.getInventory().selectedSlot) {
-            mc.player.getInventory().selectedSlot = bestSlot;
+        if (bestSlot != -1 && bestSlot != mc.player.getInventory().getSelectedSlot()) {
+            mc.player.getInventory().setSelectedSlot(bestSlot);
         }
     }
 }

@@ -43,7 +43,7 @@ func RegisterAuth(mux *http.ServeMux, a *service.Auth) {
 	})
 
 	mux.HandleFunc("POST /auth/logout", func(w http.ResponseWriter, r *http.Request) {
-		token := r.Header.Get("Authorization")
+		token := bearerToken(r)
 		a.Logout(token)
 		w.Write([]byte(`{"status":"ok"}`))
 	})

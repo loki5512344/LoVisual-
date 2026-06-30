@@ -17,7 +17,7 @@ import java.util.concurrent.CompletionStage;
 public class IRC extends Module {
     public static IRC INSTANCE;
 
-    private final BooleanSetting autoConnect = new BooleanSetting("AutoConnect", true);
+    private final BooleanSetting autoConnect = new BooleanSetting("AutoConnect", false);
     private WebSocket ws;
     private HttpClient httpClient;
     private final Gson gson = new Gson();

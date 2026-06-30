@@ -1,0 +1,35 @@
+#version 150
+
+uniform sampler2D sampler1;
+uniform sampler2D sampler2;
+uniform vec2 texelSize;
+uniform vec2 direction;
+uniform float radius;
+uniform float kernel[64];
+
+in vec2 texCoord;
+
+out vec4 fragColor;
+
+void main() {
+    vec2 uv = texCoord;
+
+    if (direction.x == 0.0 && texture(sampler2, uv).a > 0.0) {
+        discard;
+    }
+
+    vec4 pixel_color = texture(sampler1, uv);
+    pixel_color.rgb *= pixel_color.a;
+    pixel_color *= kernel[0];
+
+    for (float f = 1; f <= radius; f++) {
+        vec2 offset = f * texelSize * direction;
+        vec4 left = texture(sampler1, uv - offset);
+        vec4 right = texture(sampler1, uv + offset);
+        left.rgb *= left.a;
+        right.rgb *= right.a;
+        pixel_color += (left + right) * kernel[int(f)];
+    }
+
+    fragColor = vec4(pixel_color.rgb / pixel_color.a, pixel_color.a);
+}

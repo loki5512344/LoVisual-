@@ -7,7 +7,7 @@ import dev.loki.lovisual.module.ModuleCategory;
 import dev.loki.lovisual.module.ModuleInfo;
 import dev.loki.lovisual.setting.impl.BooleanSetting;
 import dev.loki.lovisual.setting.impl.SliderSetting;
-import net.minecraft.item.SwordItem;
+
 import net.minecraft.util.Hand;
 
 @ModuleInfo(name = "AutoClicker", desc = "Automatic clicking", category = ModuleCategory.COMBAT)
@@ -28,7 +28,6 @@ public class AutoClicker extends Module {
         long interval = (long) (1000L / cps.get());
 
         if (leftClick.get() && mc.options.attackKey.isPressed()) {
-            if (onlyWeapon.get() && !(mc.player.getMainHandStack().getItem() instanceof SwordItem)) return;
             if (now - lastLeftClick >= interval) {
                 mc.interactionManager.attackEntity(mc.player, mc.targetedEntity);
                 mc.player.swingHand(Hand.MAIN_HAND);
@@ -37,7 +36,6 @@ public class AutoClicker extends Module {
         }
 
         if (rightClick.get() && mc.options.useKey.isPressed()) {
-            if (onlyWeapon.get() && !(mc.player.getMainHandStack().getItem() instanceof SwordItem)) return;
             if (now - lastRightClick >= interval) {
                 mc.interactionManager.interactItem(mc.player, Hand.MAIN_HAND);
                 mc.player.swingHand(Hand.MAIN_HAND);

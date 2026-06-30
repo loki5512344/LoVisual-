@@ -10,7 +10,13 @@ import dev.loki.lovisual.module.impl.misc.*;
 import dev.loki.lovisual.module.impl.movement.Sprint;
 import dev.loki.lovisual.module.impl.player.*;
 import dev.loki.lovisual.module.impl.render.*;
+import dev.loki.lovisual.gui.clickgui.ClickGuiScreen;
+import dev.loki.lovisual.render.FontRegistry;
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
+import net.minecraft.client.MinecraftClient;
+
+import static net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.literal;
 
 public class LoVisualClient implements ClientModInitializer {
     @Override
@@ -27,8 +33,18 @@ public class LoVisualClient implements ClientModInitializer {
         Managers.CONFIG.init();
         Managers.COMMAND.init();
         HudManager.init();
+        FontRegistry.init();
         Managers.CONFIG.load();
         Updater.check();
+
+        ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) ->
+            dispatcher.register(literal("lovisual")
+                .executes(ctx -> {
+                    MinecraftClient.getInstance().setScreen(new ClickGuiScreen());
+                    return 1;
+                })
+            )
+        );
     }
 
     private void registerModules(ModuleManager mm) {

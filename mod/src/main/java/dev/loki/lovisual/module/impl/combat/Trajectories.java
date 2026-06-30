@@ -11,10 +11,13 @@ import dev.loki.lovisual.setting.impl.BooleanSetting;
 import dev.loki.lovisual.setting.impl.ColorSetting;
 import dev.loki.lovisual.setting.impl.ModeSetting;
 import dev.loki.lovisual.setting.impl.SliderSetting;
+import com.mojang.blaze3d.vertex.VertexFormat;
+import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.render.BufferBuilder;
-import net.minecraft.client.render.BufferRenderer;
+import net.minecraft.client.render.BuiltBuffer;
+import net.minecraft.client.render.RenderLayer;
+import net.minecraft.client.render.RenderSetup;
 import net.minecraft.client.render.Tessellator;
-import net.minecraft.client.render.VertexFormat;
 import net.minecraft.client.render.VertexFormats;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.projectile.thrown.EnderPearlEntity;
@@ -104,8 +107,9 @@ public class Trajectories extends Module {
         matrices.push();
         Matrix4f matrix = matrices.peek().getPositionMatrix();
 
-        BufferBuilder buffer = Tessellator.getInstance().begin(VertexFormat.DrawMode.LINE_STRIP, VertexFormats.LINES);
-        Vec3d cam = event.getCamera().getPos();
+        Vec3d cam = event.getCamera().getCameraPos();
+
+        BufferBuilder buffer = Tessellator.getInstance().begin(VertexFormat.DrawMode.DEBUG_LINE_STRIP, VertexFormats.POSITION_COLOR_NORMAL);
 
         for (Vec3d p : path) {
             float x = (float) (p.x - cam.x);
@@ -114,14 +118,14 @@ public class Trajectories extends Module {
             buffer.vertex(matrix, x, y, z).color(r, g, b, a).normal(0f, 1f, 0f);
             buffer.vertex(matrix, x, y, z).color(r, g, b, a).normal(0f, 1f, 0f);
         }
-        BufferRenderer.drawWithGlobalProgram(buffer.end());
+        drawBuffer(buffer.end());
 
         if (showLanding.get() && !path.isEmpty()) {
             Vec3d last = path.getLast();
             float lx = (float) (last.x - cam.x);
             float ly = (float) (last.y - cam.y);
             float lz = (float) (last.z - cam.z);
-            BufferBuilder box = Tessellator.getInstance().begin(VertexFormat.DrawMode.LINES, VertexFormats.LINES);
+            BufferBuilder box = Tessellator.getInstance().begin(VertexFormat.DrawMode.DEBUG_LINES, VertexFormats.POSITION_COLOR_NORMAL);
             float hs = 0.3f;
             box.vertex(matrix, lx - hs, ly, lz - hs).color(r, g, b, a).normal(0f, 1f, 0f);
             box.vertex(matrix, lx + hs, ly, lz - hs).color(r, g, b, a).normal(0f, 1f, 0f);
@@ -139,17 +143,25 @@ public class Trajectories extends Module {
             box.vertex(matrix, lx - hs, ly + 0.01f, lz + hs).color(r, g, b, a).normal(0f, 1f, 0f);
             box.vertex(matrix, lx - hs, ly + 0.01f, lz + hs).color(r, g, b, a).normal(0f, 1f, 0f);
             box.vertex(matrix, lx - hs, ly + 0.01f, lz - hs).color(r, g, b, a).normal(0f, 1f, 0f);
-            BufferRenderer.drawWithGlobalProgram(box.end());
+            drawBuffer(box.end());
         }
 
         matrices.pop();
+    }
+
+    private static RenderLayer lineLayer;
+    private static void drawBuffer(BuiltBuffer buffer) {
+        if (lineLayer == null) {
+            lineLayer = RenderLayer.of("lovisual_line", RenderSetup.builder(RenderPipelines.LINES).build());
+        }
+        lineLayer.draw(buffer);
     }
 
     @EventHandler
     private void onRender2D(Render2DEvent event) {
         if (tracked == null || ticksUntilLand <= 0 || !showTimer.get()) return;
 
-        Vec3d pos = tracked.getPos();
+        Vec3d pos = new Vec3d(tracked.getX(), tracked.getY(), tracked.getZ());
         Vec3d screen = projectToScreen(event.getContext(), pos);
 
         if (screen == null || screen.z < 0) return;
@@ -158,17 +170,17 @@ public class Trajectories extends Module {
         int x = (int) screen.x;
         int y = (int) screen.y;
 
-        event.getContext().getMatrices().push();
-        event.getContext().getMatrices().translate(0, 0, 100);
+        event.getContext().getMatrices().pushMatrix();
+        event.getContext().getMatrices().translate(0, 0);
         int tw = mc.textRenderer.getWidth(timer);
         event.getContext().fill(x - tw / 2 - 3, y - 12, x + tw / 2 + 3, y + 2, 0x80000000);
         event.getContext().drawText(mc.textRenderer, timer, x - tw / 2, y - 10, 0xFFFF4444, true);
-        event.getContext().getMatrices().pop();
+        event.getContext().getMatrices().popMatrix();
     }
 
     private Vec3d projectToScreen(net.minecraft.client.gui.DrawContext ctx, Vec3d pos) {
         if (mc.getCameraEntity() == null) return null;
-        Vec3d cam = mc.getCameraEntity().getPos();
+        Vec3d cam = new Vec3d(mc.getCameraEntity().getX(), mc.getCameraEntity().getY(), mc.getCameraEntity().getZ());
         double relX = pos.x - cam.x;
         double relY = pos.y - cam.y;
         double relZ = pos.z - cam.z;

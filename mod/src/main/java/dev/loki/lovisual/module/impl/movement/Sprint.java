@@ -14,7 +14,7 @@ public class Sprint extends Module {
     @EventHandler
     private void onTick(TickEvent event) {
         if (mc.player == null) return;
-        if (mc.player.input.movementForward > 0 && !mc.player.isSneaking()) {
+        if (mc.player.input.playerInput.forward() && !mc.player.isSneaking()) {
             mc.player.setSprinting(true);
         }
     }

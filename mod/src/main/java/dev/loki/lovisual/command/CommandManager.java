@@ -119,6 +119,10 @@ public class CommandManager {
                         List<String> profiles = ModuleManager.INSTANCE.configManager.getProfiles();
                         sendMessage("§6Profiles: " + String.join(", ", profiles));
                     }
+                    case "reset" -> {
+                        ModuleManager.INSTANCE.configManager.reset();
+                        sendMessage("§aConfig reset. All modules disabled.");
+                    }
                     case "cloud" -> {
                         if (args.length < 2) {
                             sendMessage("§e/Lovisual config cloud upload <name> §7- Upload, get share key");

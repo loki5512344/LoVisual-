@@ -10,8 +10,8 @@
     "render.HeldItemRendererMixin",
     "render.InGameHudMixin",
     "render.GameRendererMixin",
-    "render.WorldRendererMixin",
     "render.MainMenuMixin",
+    "render.ScreenMixin",
     "entity.ClientPlayerEntityMixin",
     "entity.LivingEntityMixin"
   ],

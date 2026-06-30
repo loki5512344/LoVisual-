@@ -24,7 +24,7 @@ public class HudManager {
     private void onRender(Render2DEvent event) {
         for (HudElement e : elements) {
             if (!e.isVisible()) continue;
-            e.render(event.getContext(), event.getTickCounter().getTickDelta(false));
+            e.render(event.getContext(), event.getTickCounter().getTickProgress(false));
         }
     }
 

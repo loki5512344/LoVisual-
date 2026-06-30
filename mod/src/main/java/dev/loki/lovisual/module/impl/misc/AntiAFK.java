@@ -5,6 +5,7 @@ import dev.loki.lovisual.core.event.impl.TickEvent;
 import dev.loki.lovisual.module.Module;
 import dev.loki.lovisual.module.ModuleCategory;
 import dev.loki.lovisual.module.ModuleInfo;
+import net.minecraft.util.PlayerInput;
 
 @ModuleInfo(name = "AntiAFK", desc = "Prevents AFK kick", category = ModuleCategory.MISC)
 public class AntiAFK extends Module {
@@ -17,7 +18,7 @@ public class AntiAFK extends Module {
         if (tick < 80) return;
         tick = 0;
         if (mc.player.input != null) {
-            mc.player.input.movementForward = 1;
+            mc.player.input.playerInput = new PlayerInput(true, false, false, false, false, false, false);
         }
     }
 }
